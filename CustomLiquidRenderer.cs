@@ -2664,10 +2664,13 @@ sealed class CustomLiquidRenderer : IInitializer {
     }
 
     public static void SetTarVertexColors(ref VertexColors colors, float opacity, int x, int y) {
-        colors.BottomLeftColor = Color.White;
-        colors.BottomRightColor = Color.White;
-        colors.TopLeftColor = Color.White;
-        colors.TopRightColor = Color.White;
+        float brightness = Lighting.Brightness(x, y) * 1f;
+        brightness = MathF.Pow(brightness, 0.1f);
+        brightness = MathHelper.Clamp(brightness, 0f, 1f);
+        colors.BottomLeftColor = Color.Lerp(colors.BottomLeftColor, Color.White, brightness);
+        colors.BottomRightColor = Color.Lerp(colors.BottomRightColor, Color.White, brightness);
+        colors.TopLeftColor = Color.Lerp(colors.TopLeftColor, Color.White, brightness);
+        colors.TopRightColor = Color.Lerp(colors.TopRightColor, Color.White, brightness);
         colors.BottomLeftColor *= opacity;
         colors.BottomRightColor *= opacity;
         colors.TopLeftColor *= opacity;
