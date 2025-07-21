@@ -110,7 +110,7 @@ sealed class TarDroplet : ModGore {
             //    gore.velocity.Y += 0.2f;
             //}
             animationSpeed *= 2;
-            gore.velocity.Y += 0.1f;
+            gore.velocity.Y += 0.125f;
 
             if ((double)gore.velocity.Y < 0.5)
                 gore.velocity.Y = 0.5f;
@@ -132,7 +132,7 @@ sealed class TarDroplet : ModGore {
             //    animationSpeed *= 2;
             //else if (type == 717)
             //    animationSpeed *= 6;
-            animationSpeed *= 3;
+            animationSpeed *= 2;
 
             gore.velocity.Y += 0.1f;
             if (gore.frameCounter >= animationSpeed) {
