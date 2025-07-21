@@ -5,12 +5,15 @@ using ReLogic.Content;
 using ReLogic.Threading;
 
 using RoALiquids.Content.Dusts;
+using RoALiquids.Content.Projectiles;
 
 using System;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 
 using Terraria;
+using Terraria.Audio;
+using Terraria.DataStructures;
 using Terraria.GameContent;
 using Terraria.GameContent.Drawing;
 using Terraria.GameContent.Liquid;
@@ -1052,15 +1055,119 @@ sealed class CustomLiquidRenderer : IInitializer {
     }
     private bool On_LiquidRenderer_HasFullWater(On_LiquidRenderer.orig_HasFullWater orig, LiquidRenderer self, int x, int y) => HasFullWater(x, y);
 
-    private void On_Liquid_LiquidCheck(On_Liquid.orig_LiquidCheck orig, int x, int y, int thisLiquidType) {
-        if (thisLiquidType != 4 && thisLiquidType != 5) {
+    public static void GetLiquidMergeTypes(int thisLiquidType, out int liquidMergeTileType, out int liquidMergeType, bool waterNearby, bool lavaNearby, bool honeyNearby, bool shimmerNearby, bool tarNearby, out bool shouldExplode) {
+        shouldExplode = false;
+        liquidMergeTileType = 56;
+        liquidMergeType = thisLiquidType;
 
-            orig(x, y, thisLiquidType);
-            return;
+        if (thisLiquidType != 0 && waterNearby) {
+            switch (thisLiquidType) {
+                case 1:
+                    liquidMergeTileType = 56;
+                    break;
+                case 2:
+                    liquidMergeTileType = 229;
+                    break;
+                case 3:
+                    liquidMergeTileType = 659;
+                    break;
+                case 4:
+                    shouldExplode = true;
+                    break;
+                case 5:
+                    liquidMergeTileType = ModContent.TileType<Content.Tiles.SolidifiedTar>();
+                    break;
+            }
+
+            liquidMergeType = 0;
         }
 
-        return;
+        if (thisLiquidType != 1 && lavaNearby) {
+            switch (thisLiquidType) {
+                case 0:
+                    liquidMergeTileType = 56;
+                    break;
+                case 2:
+                    liquidMergeTileType = 230;
+                    break;
+                case 3:
+                    liquidMergeTileType = 659;
+                    break;
+                case 4:
+                    break;
+                case 5:
+                    shouldExplode = true;
+                    break;
+            }
 
+            liquidMergeType = 1;
+        }
+
+        if (thisLiquidType != 2 && honeyNearby) {
+            switch (thisLiquidType) {
+                case 0:
+                    liquidMergeTileType = 229;
+                    break;
+                case 1:
+                    liquidMergeTileType = 230;
+                    break;
+                case 3:
+                    liquidMergeTileType = 659;
+                    break;
+                case 4:
+                    break;
+                case 5:
+                    liquidMergeTileType = ModContent.TileType<Content.Tiles.SolidifiedTar>();
+                    break;
+            }
+
+            liquidMergeType = 2;
+        }
+
+        if (thisLiquidType != 3 && shimmerNearby) {
+            switch (thisLiquidType) {
+                case 0:
+                    liquidMergeTileType = 659;
+                    break;
+                case 1:
+                    liquidMergeTileType = 659;
+                    break;
+                case 2:
+                    liquidMergeTileType = 659;
+                    break;
+                case 4:
+                    break;
+                case 5:
+                    liquidMergeTileType = 659;
+                    break;
+            }
+
+            liquidMergeType = 3;
+        }
+
+        if (thisLiquidType != 5 && tarNearby) {
+            switch (thisLiquidType) {
+                case 0:
+                    liquidMergeTileType = ModContent.TileType<Content.Tiles.SolidifiedTar>();
+                    break;
+                case 1:
+                    shouldExplode = true;
+                    break;
+                case 2:
+                    liquidMergeTileType = ModContent.TileType<Content.Tiles.SolidifiedTar>();
+                    break;
+                case 4:
+                    break;
+                case 5:
+                    liquidMergeTileType = TileID.ShimmerBlock;
+                    break;
+            }
+
+            liquidMergeType = 5;
+        }
+    }
+
+    private void On_Liquid_LiquidCheck(On_Liquid.orig_LiquidCheck orig, int x, int y, int thisLiquidType) {
         if (WorldGen.SolidTile(x, y))
             return;
 
@@ -1092,7 +1199,8 @@ sealed class CustomLiquidRenderer : IInitializer {
             bool lavaNearby = tile.LiquidType == LiquidID.Lava || tile2.LiquidType == LiquidID.Lava || tile3.LiquidType == LiquidID.Lava;
             bool honeyNearby = tile.LiquidType == LiquidID.Honey || tile2.LiquidType == LiquidID.Honey || tile3.LiquidType == LiquidID.Honey;
             bool shimmerNearby = tile.LiquidType == LiquidID.Shimmer || tile2.LiquidType == LiquidID.Shimmer || tile3.LiquidType == LiquidID.Shimmer;
-            Liquid.GetLiquidMergeTypes(thisLiquidType, out liquidMergeTileType, out liquidMergeType, waterNearby, lavaNearby, honeyNearby, shimmerNearby);
+            bool tarNearby = tile.LiquidType == 5 || tile2.LiquidType == 5 || tile3.LiquidType == 5;
+            GetLiquidMergeTypes(thisLiquidType, out liquidMergeTileType, out liquidMergeType, waterNearby, lavaNearby, honeyNearby, shimmerNearby, tarNearby, out bool shouldExplode);
             if (num < 24 || liquidMergeType == thisLiquidType)
                 return;
 
@@ -1104,11 +1212,18 @@ sealed class CustomLiquidRenderer : IInitializer {
 
             if (!tile5.HasTile) {
                 tile5.LiquidAmount = 0;
-                tile.LiquidType = 0;
 
-                TileChangeType liquidChangeType = WorldGen.GetLiquidChangeType(thisLiquidType, liquidMergeType);
+                if (shouldExplode && Main.netMode != NetmodeID.MultiplayerClient) {
+                    tile.LiquidAmount = tile2.LiquidAmount = tile3.LiquidAmount = 0;
+                    Projectile.NewProjectile(null, new Point16(x, y).ToWorldCoordinates(), Vector2.Zero, ModContent.ProjectileType<TarExplosion>(), 100, 0f);
+                    WorldGen.SquareTileFrame(x, y);
+
+                    return;
+                }
+
+                TileChangeType liquidChangeType = GetLiquidChangeType(thisLiquidType, liquidMergeType);
                 if (!WorldGen.gen)
-                    WorldGen.PlayLiquidChangeSound(liquidChangeType, x, y);
+                    PlayLiquidChangeSound(liquidChangeType, x, y);
 
                 WorldGen.PlaceTile(x, y, liquidMergeTileType, mute: true, forced: true);
                 WorldGen.SquareTileFrame(x, y);
@@ -1155,14 +1270,22 @@ sealed class CustomLiquidRenderer : IInitializer {
             bool lavaNearby2 = tile4.LiquidType == LiquidID.Lava;
             bool honeyNearby2 = tile4.LiquidType == LiquidID.Honey;
             bool shimmerNearby2 = tile4.LiquidType == LiquidID.Shimmer;
-            Liquid.GetLiquidMergeTypes(thisLiquidType, out liquidMergeTileType2, out liquidMergeType2, waterNearby2, lavaNearby2, honeyNearby2, shimmerNearby2);
+            bool tarNearby2 = tile4.LiquidType == 5;
+            GetLiquidMergeTypes(thisLiquidType, out liquidMergeTileType2, out liquidMergeType2, waterNearby2, lavaNearby2, honeyNearby2, shimmerNearby2, tarNearby2, out bool shouldExplode);
             tile5.LiquidAmount = 0;
             tile5.LiquidType = 0;
 
             tile4.LiquidAmount = 0;
-            TileChangeType liquidChangeType2 = WorldGen.GetLiquidChangeType(thisLiquidType, liquidMergeType2);
+            if (shouldExplode && Main.netMode != NetmodeID.MultiplayerClient) {
+                tile.LiquidAmount = tile2.LiquidAmount = tile3.LiquidAmount = 0;
+                Projectile.NewProjectile(null, new Point16(x, y).ToWorldCoordinates(), Vector2.Zero, ModContent.ProjectileType<TarExplosion>(), 100, 0f);
+                WorldGen.SquareTileFrame(x, y + 1);
+
+                return;
+            }
+            TileChangeType liquidChangeType2 = GetLiquidChangeType(thisLiquidType, liquidMergeType2);
             if (!Main.gameMenu)
-                WorldGen.PlayLiquidChangeSound(liquidChangeType2, x, y);
+                PlayLiquidChangeSound(liquidChangeType2, x, y);
 
             WorldGen.PlaceTile(x, y + 1, liquidMergeTileType2, mute: true, forced: true);
             WorldGen.SquareTileFrame(x, y + 1);
@@ -1172,6 +1295,92 @@ sealed class CustomLiquidRenderer : IInitializer {
                 //NetMessage.SendTileSquare(-1, x - 1, y, 3, liquidChangeType2);
         }
     }
+
+    public enum TileChangeType : byte {
+        None,
+        LavaWater,
+        HoneyWater,
+        HoneyLava,
+        ShimmerWater,
+        ShimmerLava,
+        ShimmerHoney,
+        TarWater,
+        TarLava,
+        TarHoney,
+        TarShimmer
+    }
+
+    public static TileChangeType GetLiquidChangeType(int liquidType, int otherLiquidType) {
+        if ((liquidType == 0 && otherLiquidType == 1) || (liquidType == 1 && otherLiquidType == 0))
+            return TileChangeType.LavaWater;
+
+        if ((liquidType == 0 && otherLiquidType == 2) || (liquidType == 2 && otherLiquidType == 0))
+            return TileChangeType.HoneyWater;
+
+        if ((liquidType == 1 && otherLiquidType == 2) || (liquidType == 2 && otherLiquidType == 1))
+            return TileChangeType.HoneyLava;
+
+        if ((liquidType == 0 && otherLiquidType == 3) || (liquidType == 3 && otherLiquidType == 0))
+            return TileChangeType.ShimmerWater;
+
+        if ((liquidType == 1 && otherLiquidType == 3) || (liquidType == 3 && otherLiquidType == 1))
+            return TileChangeType.ShimmerLava;
+
+        if ((liquidType == 2 && otherLiquidType == 3) || (liquidType == 3 && otherLiquidType == 2))
+            return TileChangeType.ShimmerHoney;
+
+
+        if ((liquidType == 0 && otherLiquidType == 5) || (liquidType == 5 && otherLiquidType == 0))
+            return TileChangeType.TarWater;
+
+        if ((liquidType == 1 && otherLiquidType == 5) || (liquidType == 5 && otherLiquidType == 1))
+            return TileChangeType.TarLava;
+
+        if ((liquidType == 2 && otherLiquidType == 5) || (liquidType == 5 && otherLiquidType == 2))
+            return TileChangeType.TarHoney;
+
+        if ((liquidType == 3 && otherLiquidType == 5) || (liquidType == 5 && otherLiquidType == 3))
+            return TileChangeType.TarShimmer;
+
+        return TileChangeType.None;
+    }
+
+    public static void PlayLiquidChangeSound(TileChangeType eventType, int x, int y, int count = 1) {
+        switch (eventType) {
+            case TileChangeType.LavaWater:
+                SoundEngine.PlaySound(SoundID.LiquidsWaterLava, new Vector2(x * 16 + count * 8, y * 16 + count * 8));
+                break;
+            case TileChangeType.HoneyWater:
+                SoundEngine.PlaySound(SoundID.LiquidsHoneyWater, new Vector2(x * 16 + count * 8, y * 16 + count * 8));
+                break;
+            case TileChangeType.HoneyLava:
+                SoundEngine.PlaySound(SoundID.LiquidsHoneyLava, new Vector2(x * 16 + count * 8, y * 16 + count * 8));
+                break;
+            case TileChangeType.ShimmerWater:
+                SoundEngine.PlaySound(SoundID.ShimmerWeak1, new Vector2(x * 16 + count * 8, y * 16 + count * 8));
+                break;
+            case TileChangeType.ShimmerLava:
+                SoundEngine.PlaySound(SoundID.ShimmerWeak1, new Vector2(x * 16 + count * 8, y * 16 + count * 8));
+                break;
+            case TileChangeType.ShimmerHoney:
+                SoundEngine.PlaySound(SoundID.ShimmerWeak1, new Vector2(x * 16 + count * 8, y * 16 + count * 8));
+                break;
+
+            case TileChangeType.TarWater:
+                SoundEngine.PlaySound(SoundID.ShimmerWeak2 with { Pitch = -1f }, new Vector2(x * 16 + count * 8, y * 16 + count * 8));
+                break;
+            case TileChangeType.TarLava:
+                SoundEngine.PlaySound(SoundID.ShimmerWeak2 with { Pitch = -1f }, new Vector2(x * 16 + count * 8, y * 16 + count * 8));
+                break;
+            case TileChangeType.TarHoney:
+                SoundEngine.PlaySound(SoundID.ShimmerWeak2 with { Pitch = -1f }, new Vector2(x * 16 + count * 8, y * 16 + count * 8));
+                break;
+            case TileChangeType.TarShimmer:
+                SoundEngine.PlaySound(SoundID.ShimmerWeak2 with { Pitch = -1f }, new Vector2(x * 16 + count * 8, y * 16 + count * 8));
+                break;
+        }
+    }
+
     private void On_Liquid_Update(On_Liquid.orig_Update orig, Liquid self) {
         int x = self.x, y = self.y;
         Tile tile = Main.tile[x - 1, y];
@@ -1974,16 +2183,31 @@ sealed class CustomLiquidRenderer : IInitializer {
                     if (ptr2->HasVisibleLiquid && (!ptr2->IsSolid || ptr2->IsHalfBrick)) {
                         ptr2->Opacity = 1f;
                         ptr2->VisibleType = ptr2->Type;
-                        float num3 = 1f / (float)(WATERFALL_LENGTH[ptr2->Type] + 1);
-                        float num4 = 1f;
-                        for (int num5 = 1; num5 <= WATERFALL_LENGTH[ptr2->Type]; num5++) {
-                            num4 -= num3;
-                            if (ptr2[num5].IsSolid)
-                                break;
+                        if (ptr2->Type == 5) {
+                            float num3 = 1f / (float)(WATERFALL_LENGTH[ptr2->Type] + 1);
+                            float num4 = 1f;
+                            for (int num5 = 1; num5 <= WATERFALL_LENGTH[ptr2->Type]; num5++) {
+                                num4 -= num3 / 2f;
+                                if (ptr2[num5].IsSolid)
+                                    break;
 
-                            ptr2[num5].VisibleLiquidLevel = Math.Max(ptr2[num5].VisibleLiquidLevel, ptr2->VisibleLiquidLevel * num4);
-                            ptr2[num5].Opacity = num4;
-                            ptr2[num5].VisibleType = ptr2->Type;
+                                ptr2[num5].VisibleLiquidLevel = Math.Max(ptr2[num5].VisibleLiquidLevel, ptr2->VisibleLiquidLevel * num4);
+                                ptr2[num5].Opacity = num4;
+                                ptr2[num5].VisibleType = ptr2->Type;
+                            }
+                        }
+                        else {
+                            float num3 = 1f / (float)(WATERFALL_LENGTH[ptr2->Type] + 1);
+                            float num4 = 1f;
+                            for (int num5 = 1; num5 <= WATERFALL_LENGTH[ptr2->Type]; num5++) {
+                                num4 -= num3;
+                                if (ptr2[num5].IsSolid)
+                                    break;
+
+                                ptr2[num5].VisibleLiquidLevel = Math.Max(ptr2[num5].VisibleLiquidLevel, ptr2->VisibleLiquidLevel * num4);
+                                ptr2[num5].Opacity = num4;
+                                ptr2[num5].VisibleType = ptr2->Type;
+                            }
                         }
                     }
 
@@ -2355,7 +2579,7 @@ sealed class CustomLiquidRenderer : IInitializer {
                             num2 = 16;
                             int num3 = ptr2->X + drawArea.X - 2;
                             int num4 = ptr2->Y + drawArea.Y - 2;
-                            SetTarVertexColors(ref vertices, num, num3, num4);
+                            SetTarVertexColors(ref vertices, 1f, num3, num4);
                             tar = true;
                         }
 
@@ -2373,6 +2597,12 @@ sealed class CustomLiquidRenderer : IInitializer {
                         num = Math.Min(1f, num);
 
                         if (!permafrost && !tar) {
+                            vertices.BottomLeftColor *= num;
+                            vertices.BottomRightColor *= num;
+                            vertices.TopLeftColor *= num;
+                            vertices.TopRightColor *= num;
+                        }
+                        if (tar) {
                             vertices.BottomLeftColor *= num;
                             vertices.BottomRightColor *= num;
                             vertices.TopLeftColor *= num;

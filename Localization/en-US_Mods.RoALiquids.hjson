@@ -1,1 +1,10 @@
 Tiles.DrippingTar.MapEntry: Dripping Tar
+
+Items: {
+	SolidifiedTar: {
+		DisplayName: Solidified Tar
+		Tooltip: ""
+	}
+}
+
+Projectiles.TarExplosion.DisplayName: Tar Explosion
