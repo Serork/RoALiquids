@@ -2,6 +2,8 @@ using ReLogic.Content.Sources;
 
 using RoA;
 
+using System.IO;
+
 using Terraria.ModLoader;
 
 namespace RoALiquids;
@@ -15,5 +17,9 @@ sealed class RoALiquids : Mod {
         foreach (IPostSetupContent type in GetContent<IPostSetupContent>()) {
             type.PostSetupContent();
         }
+    }
+
+    public override void HandlePacket(BinaryReader reader, int sender) {
+        MultiplayerSystem.HandlePacket(reader, sender);
     }
 }

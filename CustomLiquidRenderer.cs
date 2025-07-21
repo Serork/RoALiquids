@@ -1228,9 +1228,10 @@ sealed class CustomLiquidRenderer : IInitializer {
                 WorldGen.PlaceTile(x, y, liquidMergeTileType, mute: true, forced: true);
                 WorldGen.SquareTileFrame(x, y);
 
-                // TODO: multiplayer packets
-                //if (Main.netMode == 2)
-                    //NetMessage.SendTileSquare(-1, x - 1, y - 1, 3, liquidChangeType);
+                if (Main.netMode == 2) {
+                    NetMessage.SendTileSquare(-1, x - 1, y - 1, 3);
+                    MultiplayerSystem.SendPacket(new PlayLiquidChangeSoundPacket(x, y, (byte)liquidChangeType));
+                }
             }
         }
         else {
@@ -1290,9 +1291,10 @@ sealed class CustomLiquidRenderer : IInitializer {
             WorldGen.PlaceTile(x, y + 1, liquidMergeTileType2, mute: true, forced: true);
             WorldGen.SquareTileFrame(x, y + 1);
 
-            // TODO: multiplayer packets
-            //if (Main.netMode == 2)
-                //NetMessage.SendTileSquare(-1, x - 1, y, 3, liquidChangeType2);
+            if (Main.netMode == 2) {
+                NetMessage.SendTileSquare(-1, x - 1, y, 3);
+                MultiplayerSystem.SendPacket(new PlayLiquidChangeSoundPacket(x, y, (byte)liquidChangeType2));
+            }
         }
     }
 
