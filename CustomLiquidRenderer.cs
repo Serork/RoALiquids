@@ -201,11 +201,11 @@ sealed class CustomLiquidRenderer : IInitializer {
     private void On_LightMap_Clear(On_LightMap.orig_Clear orig, LightMap self) {
         orig(self);
 
-        for (int i = 0; i < LightMap__colors(self).Length; i++) {
-            if (_mask[i] != ExtraLightMaskMode.None) {
-                _mask[i] = ExtraLightMaskMode.None;
-            }
-        }
+        //for (int i = 0; i < LightMap__colors(self).Length; i++) {
+        //    if (_mask[i] != ExtraLightMaskMode.None) {
+        //        _mask[i] = ExtraLightMaskMode.None;
+        //    }
+        //}
     }
 
     [UnsafeAccessor(UnsafeAccessorKind.Field, Name = "_colors")]
