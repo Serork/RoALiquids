@@ -1,5 +1,7 @@
 ﻿using Microsoft.Xna.Framework;
 
+using RoALiquids.Content.Dusts;
+
 using Terraria;
 using Terraria.Audio;
 using Terraria.ID;
@@ -15,8 +17,8 @@ sealed class TarExplosion : ModProjectile {
 
 
     public override void SetDefaults() {
-        Projectile.width = 10;
-        Projectile.height = 10;
+        Projectile.width = 150;
+        Projectile.height = 150;
         Projectile.friendly = true;
         Projectile.penetrate = -1;
 
@@ -31,8 +33,6 @@ sealed class TarExplosion : ModProjectile {
     public override void AI() {
         Projectile.timeLeft = 0;
         Projectile.PrepareBombToBlow();
-
-        Projectile.Kill();
     }
 
     public override bool PreDraw(ref Color lightColor) => false;
@@ -51,51 +51,52 @@ sealed class TarExplosion : ModProjectile {
         Projectile.alpha = 255; // Set to transparent. This projectile technically lives as transparent for about 3 frames
 
         // Change the hitbox size, centered about the original projectile center. This makes the projectile damage enemies during the explosion.
-        Projectile.Resize(75, 75);
 
         Projectile.damage = 100; // Bomb: 100, Dynamite: 250
         Projectile.knockBack = 8f; // Bomb: 8f, Dynamite: 10f
     }
 
     public override void OnKill(int timeLeft) {
+        int width = 75, height = 75;
+        Vector2 position = Projectile.position + new Vector2(width, height) / 2;
         // Play explosion sound
-        SoundEngine.PlaySound(SoundID.Item14, Projectile.position);
+        SoundEngine.PlaySound(SoundID.Item14, position);
+
         // Smoke Dust spawn
-        for (int i = 0; i < 50; i++) {
-            Dust dust = Dust.NewDustDirect(Projectile.position, Projectile.width, Projectile.height, DustID.Smoke, 0f, 0f, 100, default, 2f);
+        for (int i = 0; i < 20; i++) {
+            Dust dust = Dust.NewDustDirect(position, width, height, ModContent.DustType<Smoke>(), 0f, 0f, 100, default, 2f);
             dust.velocity *= 1.4f;
         }
 
         // Fire Dust spawn
-        for (int i = 0; i < 80; i++) {
-            Dust dust = Dust.NewDustDirect(Projectile.position, Projectile.width, Projectile.height, DustID.Torch, 0f, 0f, 100, default, 3f);
+        for (int i = 0; i < 40; i++) {
+            Dust dust = Dust.NewDustDirect(position, width, height, ModContent.DustType<Torch>(), 0f, 0f, 100, default, 3f);
             dust.noGravity = true;
             dust.velocity *= 5f;
-            dust = Dust.NewDustDirect(Projectile.position, Projectile.width, Projectile.height, DustID.Torch, 0f, 0f, 100, default, 2f);
+            dust = Dust.NewDustDirect(position, width, height, ModContent.DustType<Torch>(), 0f, 0f, 100, default, 2f);
             dust.velocity *= 3f;
         }
 
         // Large Smoke Gore spawn
-        for (int g = 0; g < 2; g++) {
-            var goreSpawnPosition = new Vector2(Projectile.position.X + Projectile.width / 2 - 24f, Projectile.position.Y + Projectile.height / 2 - 24f);
-            Gore gore = Gore.NewGoreDirect(Projectile.GetSource_FromThis(), goreSpawnPosition, default, Main.rand.Next(61, 64), 1f);
+        for (int g = 0; g < 1; g++) {
+            var goreSpawnPosition = new Vector2(position.X + width / 2 - 24f, position.Y + height / 2 - 24f);
+            Gore gore = Gore.NewGoreDirect(Projectile.GetSource_FromThis(), goreSpawnPosition, default, ModContent.Find<ModGore>(nameof(RoALiquids) + $"/Smoke{1 + Main.rand.Next(3)}").Type, 1f);
             gore.scale = 1.5f;
             gore.velocity.X += 1.5f;
             gore.velocity.Y += 1.5f;
-            gore = Gore.NewGoreDirect(Projectile.GetSource_FromThis(), goreSpawnPosition, default, Main.rand.Next(61, 64), 1f);
+            gore = Gore.NewGoreDirect(Projectile.GetSource_FromThis(), goreSpawnPosition, default, ModContent.Find<ModGore>(nameof(RoALiquids) + $"/Smoke{1 + Main.rand.Next(3)}").Type, 1f);
             gore.scale = 1.5f;
             gore.velocity.X -= 1.5f;
             gore.velocity.Y += 1.5f;
-            gore = Gore.NewGoreDirect(Projectile.GetSource_FromThis(), goreSpawnPosition, default, Main.rand.Next(61, 64), 1f);
+            gore = Gore.NewGoreDirect(Projectile.GetSource_FromThis(), goreSpawnPosition, default, ModContent.Find<ModGore>(nameof(RoALiquids) + $"/Smoke{1 + Main.rand.Next(3)}").Type, 1f);
             gore.scale = 1.5f;
             gore.velocity.X += 1.5f;
             gore.velocity.Y -= 1.5f;
-            gore = Gore.NewGoreDirect(Projectile.GetSource_FromThis(), goreSpawnPosition, default, Main.rand.Next(61, 64), 1f);
+            gore = Gore.NewGoreDirect(Projectile.GetSource_FromThis(), goreSpawnPosition, default, ModContent.Find<ModGore>(nameof(RoALiquids) + $"/Smoke{1 + Main.rand.Next(3)}").Type, 1f);
             gore.scale = 1.5f;
             gore.velocity.X -= 1.5f;
             gore.velocity.Y -= 1.5f;
         }
         // reset size to normal width and height.
-        Projectile.Resize(10, 10);
     }
 }

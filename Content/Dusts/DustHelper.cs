@@ -3,7 +3,7 @@
 namespace RoALiquids.Content.Dusts;
 
 static class DustHelper {
-    public static void BasicDust(this Dust dust, bool applyGravity = true) {
+    public static void BasicDust(this Dust dust, bool applyGravity = true, bool onlyScale = false) {
         if (dust.position.Y > Main.screenPosition.Y + Main.screenHeight)
             dust.active = false;
 
@@ -41,10 +41,12 @@ static class DustHelper {
         if (dust.scale < num113)
             dust.active = false;
 
-        if (applyGravity && !dust.noGravity) {
-            dust.velocity.Y += 0.1f;
+        if (!onlyScale) {
+            if (applyGravity && !dust.noGravity) {
+                dust.velocity.Y += 0.1f;
+            }
+            dust.position += dust.velocity;
         }
-        dust.position += dust.velocity;
         dust.rotation += dust.velocity.X * 0.5f;
         if (dust.fadeIn > 0f && dust.fadeIn < 100f) {
             dust.scale += 0.03f;
@@ -56,7 +58,9 @@ static class DustHelper {
         }
 
         if (dust.noGravity) {
-            dust.velocity *= 0.92f;
+            if (!onlyScale) {
+                dust.velocity *= 0.92f;
+            }
             if (dust.fadeIn == 0f)
                 dust.scale -= 0.04f;
         }
