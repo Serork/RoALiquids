@@ -201,11 +201,11 @@ sealed class CustomLiquidRenderer : IInitializer {
     private void On_LightMap_Clear(On_LightMap.orig_Clear orig, LightMap self) {
         orig(self);
 
-        //for (int i = 0; i < LightMap__colors(self).Length; i++) {
-        //    if (_mask[i] != ExtraLightMaskMode.None) {
-        //        _mask[i] = ExtraLightMaskMode.None;
-        //    }
-        //}
+        for (int i = 0; i < LightMap__colors(self).Length; i++) {
+            if (_mask[i] != ExtraLightMaskMode.None) {
+                _mask[i] = ExtraLightMaskMode.None;
+            }
+        }
     }
 
     [UnsafeAccessor(UnsafeAccessorKind.Field, Name = "_colors")]
@@ -1032,7 +1032,7 @@ sealed class CustomLiquidRenderer : IInitializer {
         return Instance.GetVisibleLiquid(x, y);
     }
     private void On_LiquidRenderer_PrepareAssets(On_LiquidRenderer.orig_PrepareAssets orig, LiquidRenderer self) {
-
+        orig(self);
     }
     private void On_LiquidRenderer_LoadContent(On_LiquidRenderer.orig_LoadContent orig) {
 
@@ -2047,7 +2047,7 @@ sealed class CustomLiquidRenderer : IInitializer {
     private const int CACHE_PADDING_2 = 4;
     public const float MIN_LIQUID_SIZE = 0.25f;
     public static CustomLiquidRenderer Instance;
-    public Asset<Texture2D>[] _liquidTextures = new Asset<Texture2D>[15 + 2];
+    public Asset<Texture2D>[] _liquidTextures = new Asset<Texture2D>[2];
     public static Asset<Texture2D>[] _liquidSlopeTextures = new Asset<Texture2D>[2];
     public static Asset<Texture2D>[] _liquidBlockTextures = new Asset<Texture2D>[2];
     private LiquidCache[] _cache = new LiquidCache[1];
@@ -2072,14 +2072,14 @@ sealed class CustomLiquidRenderer : IInitializer {
 
     private void PrepareAssets() {
         if (!Main.dedServ) {
-            for (int i = 0; i < 15; i++) {
-                _liquidTextures[i] = Main.Assets.Request<Texture2D>("Images/Misc/water_" + i);
-            }
+            //for (int i = 0; i < 15; i++) {
+            //    _liquidTextures[i] = Main.Assets.Request<Texture2D>("Images/Misc/water_" + i);
+            //}
 
-            _liquidTextures[15] = ModContent.Request<Texture2D>(RoALiquids.LiquidTexturesPath + "Permafrost");
+            _liquidTextures[0] = ModContent.Request<Texture2D>(RoALiquids.LiquidTexturesPath + "Permafrost");
             _liquidSlopeTextures[0] = ModContent.Request<Texture2D>(RoALiquids.LiquidTexturesPath + "Permafrost_Slope");
             _liquidBlockTextures[0] = ModContent.Request<Texture2D>(RoALiquids.LiquidTexturesPath + "Permafrost_Block");
-            _liquidTextures[16] = ModContent.Request<Texture2D>(RoALiquids.LiquidTexturesPath + "Tar");
+            _liquidTextures[1] = ModContent.Request<Texture2D>(RoALiquids.LiquidTexturesPath + "Tar");
             _liquidSlopeTextures[1] = ModContent.Request<Texture2D>(RoALiquids.LiquidTexturesPath + "Tar_Slope");
             _liquidBlockTextures[1] = ModContent.Request<Texture2D>(RoALiquids.LiquidTexturesPath + "Tar_Block");
         }
@@ -2575,15 +2575,16 @@ sealed class CustomLiquidRenderer : IInitializer {
 
                         Lighting.GetCornerColors(i, j, out var vertices);
                         bool tar = false, permafrost = false;
+                        bool custom = false;
                         if (num2 == 4) {
-                            num2 = 15;
+                            num2 = 0;
                             int num3 = ptr2->X + drawArea.X - 2;
                             int num4 = ptr2->Y + drawArea.Y - 2;
                             SetPermafrostVertexColors(ref vertices, num, num3, num4);
                             permafrost = true;
                         }
                         if (num2 == 5) {
-                            num2 = 16;
+                            num2 = 1;
                             int num3 = ptr2->X + drawArea.X - 2;
                             int num4 = ptr2->Y + drawArea.Y - 2;
                             SetTarVertexColors(ref vertices, 1f, num3, num4);
@@ -2600,7 +2601,6 @@ sealed class CustomLiquidRenderer : IInitializer {
                                 break;
                         }
 
-
                         num = Math.Min(1f, num);
 
                         if (!permafrost && !tar) {
@@ -2615,9 +2615,13 @@ sealed class CustomLiquidRenderer : IInitializer {
                             vertices.TopLeftColor *= num;
                             vertices.TopRightColor *= num;
                         }
+                        if (permafrost || tar) {
+                            custom = true;
+                        }
                         Main.DrawTileInWater(drawOffset, i, j);
 
-                        Main.tileBatch.Draw(_liquidTextures[num2].Value, new Vector2(i << 4, j << 4) + drawOffset + liquidOffset, sourceRectangle, vertices, Vector2.Zero, 1f, SpriteEffects.None);
+                        Texture2D texture = custom ? _liquidTextures[num2].Value : LiquidRenderer.Instance._liquidTextures[num2].Value;
+                        Main.tileBatch.Draw(texture, new Vector2(i << 4, j << 4) + drawOffset + liquidOffset, sourceRectangle, vertices, Vector2.Zero, 1f, SpriteEffects.None);
                     }
 
                     ptr2++;
@@ -2653,14 +2657,14 @@ sealed class CustomLiquidRenderer : IInitializer {
                 Lighting.GetCornerColors(num3, num4, out var vertices);
                 SetShimmerVertexColors(ref vertices, val, num3, num4);
                 Main.DrawTileInWater(drawOffset, num3, num4);
-                Main.tileBatch.Draw(_liquidTextures[num2].Value, new Vector2(num3 << 4, num4 << 4) + drawOffset + liquidOffset, sourceRectangle, vertices, Vector2.Zero, 1f, SpriteEffects.None);
+                Main.tileBatch.Draw(LiquidRenderer.Instance._liquidTextures[num2].Value, new Vector2(num3 << 4, num4 << 4) + drawOffset + liquidOffset, sourceRectangle, vertices, Vector2.Zero, 1f, SpriteEffects.None);
                 sourceRectangle = ptr2->SourceRectangle;
                 bool flag = sourceRectangle.X != 16 || sourceRectangle.Y % 80 != 48;
                 if (flag || (num3 + num4) % 2 == 0) {
                     sourceRectangle.X += 48;
                     sourceRectangle.Y += 80 * GetShimmerFrame(flag, num3, num4);
                     SetShimmerVertexColors_Sparkle(ref vertices, ptr2->Opacity, num3, num4, flag);
-                    Main.tileBatch.Draw(_liquidTextures[num2].Value, new Vector2(num3 << 4, num4 << 4) + drawOffset + liquidOffset, sourceRectangle, vertices, Vector2.Zero, 1f, SpriteEffects.None);
+                    Main.tileBatch.Draw(LiquidRenderer.Instance._liquidTextures[num2].Value, new Vector2(num3 << 4, num4 << 4) + drawOffset + liquidOffset, sourceRectangle, vertices, Vector2.Zero, 1f, SpriteEffects.None);
                 }
 
                 ptr2++;
