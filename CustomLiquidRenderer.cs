@@ -2560,10 +2560,15 @@ sealed class CustomLiquidRenderer : IInitializer {
                     if (ptr2->IsVisible) {
                         int num2 = ptr2->Type;
                         Rectangle sourceRectangle = ptr2->SourceRectangle;
-                        if (ptr2->IsSurfaceLiquid)
-                            sourceRectangle.Y = 1280;
-                        else
-                            sourceRectangle.Y += (num2 == 5 ? _animationFrame2 : _animationFrame) * 80;
+                        if (num2 == 5) {
+                            sourceRectangle.Y += _animationFrame2 * 80;
+                        }
+                        else {
+                            if (ptr2->IsSurfaceLiquid)
+                                sourceRectangle.Y = 1280;
+                            else
+                                sourceRectangle.Y += _animationFrame * 80;
+                        }
 
                         Vector2 liquidOffset = ptr2->LiquidOffset;
                         float num = ptr2->Opacity * (isBackgroundDraw ? 1f : DEFAULT_OPACITY[ptr2->Type]);
@@ -2822,7 +2827,7 @@ sealed class CustomLiquidRenderer : IInitializer {
                 _frameState += 16f;
 
             num = Main.windSpeedCurrent * 15f;
-            num = ((!(num < 0f)) ? (num + 6f) : (num - 6f));
+            num = ((!(num < 0f)) ? (num + 4f) : (num - 4f));
             _frameState2 += num * (float)gameTime.ElapsedGameTime.TotalSeconds;
             if (_frameState2 < 0f)
                 _frameState2 += 16f;
