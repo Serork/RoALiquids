@@ -2831,7 +2831,7 @@ sealed class CustomLiquidRenderer : IInitializer {
                 _frameState += 16f;
 
             num = Main.windSpeedCurrent * 15f;
-            num = ((!(num < 0f)) ? (num + 6f) : (num - 6f));
+            num = ((!(num < 0f)) ? (num + 5f) : (num - 5f));
             _frameState2 += num * (float)gameTime.ElapsedGameTime.TotalSeconds;
             if (_frameState2 < 0f)
                 _frameState2 += 16f;
