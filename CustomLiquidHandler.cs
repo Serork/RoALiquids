@@ -24,12 +24,13 @@ using Terraria.Graphics.Shaders;
 using Terraria.ID;
 using Terraria.Map;
 using Terraria.ModLoader;
+using Terraria.ObjectData;
 using Terraria.Utilities;
 using Terraria.WorldBuilding;
 
 namespace RoALiquids;
 
-sealed class CustomLiquidRenderer : IInitializer {
+sealed class CustomLiquidHandler : IInitializer {
     private static readonly int[] WATERFALL_LENGTH = new int[6] {
         10,
         3,
@@ -69,6 +70,7 @@ sealed class CustomLiquidRenderer : IInitializer {
         On_Liquid.SettleWaterAt += On_Liquid_SettleWaterAt;
         On_Liquid.Update += On_Liquid_Update;
         On_Liquid.LiquidCheck += On_Liquid_LiquidCheck;
+        On_WorldGen.WaterCheck += On_WorldGen_WaterCheck;
 
         On_LiquidRenderer.PrepareDraw += On_LiquidRenderer_PrepareDraw;
         On_LiquidRenderer.DrawNormalLiquids += On_LiquidRenderer_DrawNormalLiquids;
@@ -99,6 +101,72 @@ sealed class CustomLiquidRenderer : IInitializer {
         On_MapHelper.GetMapTileXnaColor += On_MapHelper_GetMapTileXnaColor;
 
         MonoModHooks.Add(typeof(MapLegend).GetMethod("FromTile", BindingFlags.Instance | BindingFlags.Public), OnFromTile);
+    }
+
+    private void On_WorldGen_WaterCheck(On_WorldGen.orig_WaterCheck orig) {
+        Liquid.tilesIgnoreWater(ignoreSolids: true);
+        Liquid.numLiquid = 0;
+        LiquidBuffer.numLiquidBuffer = 0;
+        for (int i = 1; i < Main.maxTilesX - 1; i++) {
+            for (int num = Main.maxTilesY - 2; num > 0; num--) {
+                Tile tile = Main.tile[i, num];
+                tile.CheckingLiquid = false;
+                if (tile.LiquidAmount > 0 && tile.HasUnactuatedTile && Main.tileSolid[tile.TileType] && !Main.tileSolidTop[tile.TileType]) {
+                    tile.LiquidAmount = 0;
+                }
+                else if (tile.LiquidAmount > 0) {
+                    if (tile.HasTile) {
+                        if (tile.LiquidType == LiquidID.Lava) {
+                            if (TileObjectData.CheckLavaDeath(tile))
+                                WorldGen.KillTile(i, num);
+                        }
+                        else if (TileObjectData.CheckWaterDeath(tile)) {
+                            WorldGen.KillTile(i, num);
+                        }
+                    }
+
+                    Tile tile2 = Main.tile[i, num + 1];
+                    if ((!tile2.HasUnactuatedTile || !Main.tileSolid[tile2.TileType] || Main.tileSolidTop[tile2.TileType]) && tile2.LiquidAmount < byte.MaxValue) {
+                        if (tile2.LiquidAmount > 250)
+                            tile2.LiquidAmount = byte.MaxValue;
+                        else
+                            Liquid.AddWater(i, num);
+                    }
+
+                    Tile tile3 = Main.tile[i - 1, num];
+                    Tile tile4 = Main.tile[i + 1, num];
+                    if ((!tile3.HasUnactuatedTile || !Main.tileSolid[tile3.TileType] || Main.tileSolidTop[tile3.TileType]) && tile3.LiquidAmount != tile.LiquidAmount)
+                        Liquid.AddWater(i, num);
+                    else if ((!tile4.HasUnactuatedTile || !Main.tileSolid[tile4.TileType] || Main.tileSolidTop[tile4.TileType]) && tile4.LiquidAmount != tile.LiquidAmount)
+                        Liquid.AddWater(i, num);
+
+                    if (tile.LiquidType == LiquidID.Lava) {
+                        if (tile3.LiquidAmount > 0 && tile3.LiquidType != LiquidID.Lava)
+                            Liquid.AddWater(i, num);
+                        else if (tile4.LiquidAmount > 0 && tile4.LiquidType != LiquidID.Lava)
+                            Liquid.AddWater(i, num);
+                        else if (Main.tile[i, num - 1].LiquidAmount > 0 && Main.tile[i, num - 1].LiquidType != LiquidID.Lava)
+                            Liquid.AddWater(i, num);
+                        else if (tile2.LiquidAmount > 0 && tile2.LiquidType != LiquidID.Lava)
+                            Liquid.AddWater(i, num);
+                    }
+
+
+                    if (tile.LiquidType == 5) {
+                        if (tile3.LiquidAmount > 0 && tile3.LiquidType != 5)
+                            Liquid.AddWater(i, num);
+                        else if (tile4.LiquidAmount > 0 && tile4.LiquidType != 5)
+                            Liquid.AddWater(i, num);
+                        else if (Main.tile[i, num - 1].LiquidAmount > 0 && Main.tile[i, num - 1].LiquidType != 5)
+                            Liquid.AddWater(i, num);
+                        else if (tile2.LiquidAmount > 0 && tile2.LiquidType != 5)
+                            Liquid.AddWater(i, num);
+                    }
+                }
+            }
+        }
+
+        Liquid.tilesIgnoreWater(ignoreSolids: false);
     }
 
     private delegate string orig_FromTile(MapLegend self, MapTile mapTile, int x, int y);
@@ -2046,7 +2114,7 @@ sealed class CustomLiquidRenderer : IInitializer {
     private const int CACHE_PADDING = 2;
     private const int CACHE_PADDING_2 = 4;
     public const float MIN_LIQUID_SIZE = 0.25f;
-    public static CustomLiquidRenderer Instance;
+    public static CustomLiquidHandler Instance;
     public Asset<Texture2D>[] _liquidTextures = new Asset<Texture2D>[2];
     public static Asset<Texture2D>[] _liquidSlopeTextures = new Asset<Texture2D>[2];
     public static Asset<Texture2D>[] _liquidBlockTextures = new Asset<Texture2D>[2];
@@ -2066,7 +2134,7 @@ sealed class CustomLiquidRenderer : IInitializer {
     public event Action<Color[], Rectangle> WaveFilters;
 
     public static void LoadContent() {
-        Instance = new CustomLiquidRenderer();
+        Instance = new CustomLiquidHandler();
         Instance.PrepareAssets();
     }
 

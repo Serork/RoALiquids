@@ -558,7 +558,7 @@ sealed class CustomWaterfallRenderer : IPostSetupContent {
         if (waterfallType == MaxWaterfalls - 1) {
             Texture2D value = WaterfallManager_waterfallTexture(self)[waterfallType].Value;
             Lighting.GetCornerColors(x, y, out var vertices);
-            CustomLiquidRenderer.SetTarVertexColors(ref vertices, opacity, x, y);
+            CustomLiquidHandler.SetTarVertexColors(ref vertices, opacity, x, y);
             Main.tileBatch.Draw(value, position + new Vector2(0f, 0f), sourceRect, vertices, default(Vector2), 1f, effects);
 
             return;
