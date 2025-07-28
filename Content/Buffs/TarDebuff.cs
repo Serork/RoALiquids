@@ -1,9 +1,10 @@
 ﻿using Microsoft.Xna.Framework;
 
+using System;
+
 using Terraria;
 using Terraria.DataStructures;
 using Terraria.ModLoader;
-using Terraria.ID;
 
 namespace RoALiquids.Content.Buffs;
 
@@ -20,6 +21,27 @@ sealed class TarDebuff : ModBuff {
         player.moveSpeed *= 0.333f;
     }
 
+    private class TarDebuff_NPC : ModNPC {
+        public bool IsEffectActive;
+
+        public override void ResetEffects() => IsEffectActive = false;
+
+        public override void UpdateLifeRegen(ref int damage) {
+            if (!IsEffectActive) {
+                return;
+            }
+
+            if (NPC.onFire || NPC.onFire2 || NPC.onFire3 || NPC.onFrostBurn || NPC.onFrostBurn2 || NPC.shadowFlame) {
+                if (NPC.lifeRegen > 0)
+                    NPC.lifeRegen = 0;
+
+                NPC.lifeRegen -= 50;
+                if (damage < 10)
+                    damage = 10;
+            }
+        }
+    }
+
     private class TarDebuff_Player : ModPlayer {
         public bool IsEffectActive;
 
@@ -31,6 +53,19 @@ sealed class TarDebuff : ModBuff {
             //}
 
             //Player.moveSpeed *= 0.333f;
+        }
+
+        public override void UpdateBadLifeRegen() {
+            if (!IsEffectActive) {
+                return;
+            }
+
+            if (Player.onFire || Player.onFire2 || Player.onFire3 || Player.onFrostBurn || Player.onFrostBurn2) {
+                if (Player.lifeRegen > 0)
+                    Player.lifeRegen = 0;
+
+                Player.lifeRegen -= 50;
+            }
         }
 
         public override void DrawEffects(PlayerDrawSet drawInfo, ref float r, ref float g, ref float b, ref float a, ref bool fullBright) {
