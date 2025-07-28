@@ -67,7 +67,6 @@ abstract class LiquidDust : ModDust {
             Lighting.AddLight((int)(dust.position.X / 16f), (int)(dust.position.Y / 16f + 1f), num96 * lightR, num96 * lightG, num96 * lightB);
         }
         else {
-
             if (!Collision.WetCollision(new Vector2(dust.position.X, dust.position.Y - 8f), 4, 4)) {
                 dust.scale = 0f;
             }

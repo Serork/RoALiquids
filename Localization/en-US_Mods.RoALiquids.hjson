@@ -8,3 +8,10 @@ Items: {
 }
 
 Projectiles.TarExplosion.DisplayName: Tar Explosion
+
+Buffs: {
+	TarDebuff: {
+		DisplayName: Tar Debuff
+		Description: Mods.RoALiquids.Buffs.TarDebuff.Description
+	}
+}

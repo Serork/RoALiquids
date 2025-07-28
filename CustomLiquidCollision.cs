@@ -1,11 +1,14 @@
 ﻿using Microsoft.Xna.Framework;
 
+using RoALiquids.Content.Buffs;
+
 using System.Runtime.CompilerServices;
 
 using Terraria;
 using Terraria.Audio;
 using Terraria.ID;
 using Terraria.ModLoader;
+using Terraria.ModLoader.UI.ModBrowser;
 
 namespace RoALiquids;
 
@@ -40,8 +43,13 @@ sealed class CustomLiquidCollision_Item : GlobalItem {
                                 int num8 = Dust.NewDust(new Vector2(self.position.X - 6f, self.position.Y + (float)(self.height / 2) - 8f), self.width + 12, 24, tarDustType);
                                 Main.dust[num8].velocity.Y -= 1.5f;
                                 Main.dust[num8].velocity.X *= 2.5f;
-                                Main.dust[num8].scale = 1.3f;
-                                Main.dust[num8].alpha = 100;
+                                Main.dust[num8].scale = 1f;
+                                Main.dust[num8].alpha = Main.rand.Next(50, 100);
+                                if (Main.rand.Next(2) == 0)
+                                    Main.dust[num8].alpha += 25;
+
+                                if (Main.rand.Next(2) == 0)
+                                    Main.dust[num8].alpha += 25;
                                 Main.dust[num8].noGravity = true;
                             }
 
@@ -52,7 +60,7 @@ sealed class CustomLiquidCollision_Item : GlobalItem {
                                 int num8 = Dust.NewDust(new Vector2(self.position.X - 6f, self.position.Y + (float)(self.height / 2) - 8f), self.width + 12, 24, permafrostDustType);
                                 Main.dust[num8].velocity.Y -= 1.5f;
                                 Main.dust[num8].velocity.X *= 2.5f;
-                                Main.dust[num8].scale = 1.3f;
+                                Main.dust[num8].scale = 1f;
                                 Main.dust[num8].alpha = 100;
                                 Main.dust[num8].noGravity = true;
                             }
@@ -74,7 +82,7 @@ sealed class CustomLiquidCollision_Item : GlobalItem {
                     //        int num16 = Dust.NewDust(new Vector2(self.position.X - 6f, self.position.Y + (float)(self.height / 2) - 8f), self.width + 12, 24, tarDustType);
                     //        Main.dust[num16].velocity.Y -= 1.5f;
                     //        Main.dust[num16].velocity.X *= 2.5f;
-                    //        Main.dust[num16].scale = 1.3f;
+                    //        Main.dust[num16].scale = 1f;
                     //        Main.dust[num16].alpha = 100;
                     //        Main.dust[num16].noGravity = true;
                     //    }
@@ -86,7 +94,7 @@ sealed class CustomLiquidCollision_Item : GlobalItem {
                     //        int num16 = Dust.NewDust(new Vector2(self.position.X - 6f, self.position.Y + (float)(self.height / 2) - 8f), self.width + 12, 24, permafrostDustType);
                     //        Main.dust[num16].velocity.Y -= 1.5f;
                     //        Main.dust[num16].velocity.X *= 2.5f;
-                    //        Main.dust[num16].scale = 1.3f;
+                    //        Main.dust[num16].scale = 1f;
                     //        Main.dust[num16].alpha = 100;
                     //        Main.dust[num16].noGravity = true;
                     //    }
@@ -190,8 +198,13 @@ sealed class CustomLiquidCollision_Projectile : GlobalProjectile {
                                 int num8 = Dust.NewDust(new Vector2(projectile.position.X - 6f, projectile.position.Y + (float)(projectile.height / 2) - 8f), projectile.width + 12, 24, tarDustType);
                                 Main.dust[num8].velocity.Y -= 1.5f;
                                 Main.dust[num8].velocity.X *= 2.5f;
-                                Main.dust[num8].scale = 1.3f;
-                                Main.dust[num8].alpha = 100;
+                                Main.dust[num8].scale = 1f;
+                                Main.dust[num8].alpha = Main.rand.Next(50, 100);
+                                if (Main.rand.Next(2) == 0)
+                                    Main.dust[num8].alpha += 25;
+
+                                if (Main.rand.Next(2) == 0)
+                                    Main.dust[num8].alpha += 25;
                                 Main.dust[num8].noGravity = true;
                             }
 
@@ -212,7 +225,7 @@ sealed class CustomLiquidCollision_Projectile : GlobalProjectile {
                         //        int num16 = Dust.NewDust(new Vector2(projectile.position.X - 6f, projectile.position.Y + (float)(projectile.height / 2) - 8f), projectile.width + 12, 24, tarDustType);
                         //        Main.dust[num16].velocity.Y -= 1.5f;
                         //        Main.dust[num16].velocity.X *= 2.5f;
-                        //        Main.dust[num16].scale = 1.3f;
+                        //        Main.dust[num16].scale = 1f;
                         //        Main.dust[num16].alpha = 100;
                         //        Main.dust[num16].noGravity = true;
                         //    }
@@ -224,7 +237,7 @@ sealed class CustomLiquidCollision_Projectile : GlobalProjectile {
                         //        int num16 = Dust.NewDust(new Vector2(projectile.position.X - 6f, projectile.position.Y + (float)(projectile.height / 2) - 8f), projectile.width + 12, 24, permafrostDustType);
                         //        Main.dust[num16].velocity.Y -= 1.5f;
                         //        Main.dust[num16].velocity.X *= 2.5f;
-                        //        Main.dust[num16].scale = 1.3f;
+                        //        Main.dust[num16].scale = 1f;
                         //        Main.dust[num16].alpha = 100;
                         //        Main.dust[num16].noGravity = true;
                         //    }
@@ -368,8 +381,13 @@ sealed class CustomLiquidCollision_NPC : GlobalNPC {
                                 int num4 = Dust.NewDust(new Vector2(self.position.X - 6f, self.position.Y + (float)(self.height / 2) - 8f), self.width + 12, 24, tarDustType);
                                 Main.dust[num4].velocity.Y -= 1.5f;
                                 Main.dust[num4].velocity.X *= 2.5f;
-                                Main.dust[num4].scale = 1.3f;
-                                Main.dust[num4].alpha = 100;
+                                Main.dust[num4].scale = 1f;
+                                Main.dust[num4].alpha = Main.rand.Next(50, 100);
+                                if (Main.rand.Next(2) == 0)
+                                    Main.dust[num4].alpha += 25;
+
+                                if (Main.rand.Next(2) == 0)
+                                    Main.dust[num4].alpha += 25;
                                 Main.dust[num4].noGravity = true;
                             }
 
@@ -381,7 +399,7 @@ sealed class CustomLiquidCollision_NPC : GlobalNPC {
                                 int num4 = Dust.NewDust(new Vector2(self.position.X - 6f, self.position.Y + (float)(self.height / 2) - 8f), self.width + 12, 24, permafrostDustType);
                                 Main.dust[num4].velocity.Y -= 1.5f;
                                 Main.dust[num4].velocity.X *= 2.5f;
-                                Main.dust[num4].scale = 1.3f;
+                                Main.dust[num4].scale = 1f;
                                 Main.dust[num4].alpha = 100;
                                 Main.dust[num4].noGravity = true;
                             }
@@ -408,8 +426,13 @@ sealed class CustomLiquidCollision_NPC : GlobalNPC {
                                 int num11 = Dust.NewDust(new Vector2(self.position.X - 6f, self.position.Y + (float)(self.height / 2) - 8f), self.width + 12, 24, tarDustType);
                                 Main.dust[num11].velocity.Y -= 1.5f;
                                 Main.dust[num11].velocity.X *= 2.5f;
-                                Main.dust[num11].scale = 1.3f;
-                                Main.dust[num11].alpha = 100;
+                                Main.dust[num11].scale = 1f;
+                                Main.dust[num11].alpha = Main.rand.Next(50, 100);
+                                if (Main.rand.Next(2) == 0)
+                                    Main.dust[num11].alpha += 25;
+
+                                if (Main.rand.Next(2) == 0)
+                                    Main.dust[num11].alpha += 25;
                                 Main.dust[num11].noGravity = true;
                             }
 
@@ -421,7 +444,7 @@ sealed class CustomLiquidCollision_NPC : GlobalNPC {
                                 int num11 = Dust.NewDust(new Vector2(self.position.X - 6f, self.position.Y + (float)(self.height / 2) - 8f), self.width + 12, 24, permafrostDustType);
                                 Main.dust[num11].velocity.Y -= 1.5f;
                                 Main.dust[num11].velocity.X *= 2.5f;
-                                Main.dust[num11].scale = 1.3f;
+                                Main.dust[num11].scale = 1f;
                                 Main.dust[num11].alpha = 100;
                                 Main.dust[num11].noGravity = true;
                             }
@@ -626,6 +649,10 @@ sealed class CustomLiquidCollision_Player : ModPlayer {
         ushort tarDustType = (ushort)ModContent.DustType<Content.Dusts.Tar>(),
                permafrostDustType = (ushort)ModContent.DustType<Content.Dusts.Permafrost>();
         if (num85) {
+            if (tarWet) {
+                Player.AddBuff(ModContent.BuffType<TarDebuff>(), 420);
+            }
+
             //if ((onFire || onFire3) && !lavaWet) {
             //    for (int num88 = 0; num88 < maxBuffs; num88++) {
             //        int num89 = buffType[num88];
@@ -643,8 +670,13 @@ sealed class CustomLiquidCollision_Player : ModPlayer {
                                 int num97 = Dust.NewDust(new Vector2(Player.position.X - 6f, Player.position.Y + (float)(Player.height / 2) - 8f), Player.width + 12, 24, tarDustType);
                                 Main.dust[num97].velocity.Y -= 1.5f;
                                 Main.dust[num97].velocity.X *= 2.5f;
-                                Main.dust[num97].scale = 1.3f;
-                                Main.dust[num97].alpha = 100;
+                                Main.dust[num97].scale = 1f;
+                                Main.dust[num97].alpha = Main.rand.Next(50, 100);
+                                if (Main.rand.Next(2) == 0)
+                                    Main.dust[num97].alpha += 25;
+
+                                if (Main.rand.Next(2) == 0)
+                                    Main.dust[num97].alpha += 25;
                                 Main.dust[num97].noGravity = true;
                             }
 
@@ -655,7 +687,7 @@ sealed class CustomLiquidCollision_Player : ModPlayer {
                                 int num97 = Dust.NewDust(new Vector2(Player.position.X - 6f, Player.position.Y + (float)(Player.height / 2) - 8f), Player.width + 12, 24, permafrostDustType);
                                 Main.dust[num97].velocity.Y -= 1.5f;
                                 Main.dust[num97].velocity.X *= 2.5f;
-                                Main.dust[num97].scale = 1.3f;
+                                Main.dust[num97].scale = 1f;
                                 Main.dust[num97].alpha = 100;
                                 Main.dust[num97].noGravity = true;
                             }
@@ -686,8 +718,13 @@ sealed class CustomLiquidCollision_Player : ModPlayer {
                             int num105 = Dust.NewDust(new Vector2(Player.position.X - 6f, Player.position.Y + (float)(Player.height / 2) - 8f), Player.width + 12, 24, tarDustType);
                             Main.dust[num105].velocity.Y -= 1.5f;
                             Main.dust[num105].velocity.X *= 2.5f;
-                            Main.dust[num105].scale = 1.3f;
-                            Main.dust[num105].alpha = 100;
+                            Main.dust[num105].scale = 1f;
+                            Main.dust[num105].alpha = Main.rand.Next(50, 100);
+                            if (Main.rand.Next(2) == 0)
+                                Main.dust[num105].alpha += 25;
+
+                            if (Main.rand.Next(2) == 0)
+                                Main.dust[num105].alpha += 25;
                             Main.dust[num105].noGravity = true;
                         }
 
@@ -698,7 +735,7 @@ sealed class CustomLiquidCollision_Player : ModPlayer {
                             int num105 = Dust.NewDust(new Vector2(Player.position.X - 6f, Player.position.Y + (float)(Player.height / 2) - 8f), Player.width + 12, 24, permafrostDustType);
                             Main.dust[num105].velocity.Y -= 1.5f;
                             Main.dust[num105].velocity.X *= 2.5f;
-                            Main.dust[num105].scale = 1.3f;
+                            Main.dust[num105].scale = 1f;
                             Main.dust[num105].alpha = 100;
                             Main.dust[num105].noGravity = true;
                         }
