@@ -21,21 +21,23 @@ sealed class TarDebuff : ModBuff {
         player.moveSpeed *= 0.333f;
     }
 
-    private class TarDebuff_NPC : ModNPC {
+    private class TarDebuff_NPC : GlobalNPC {
         public bool IsEffectActive;
 
-        public override void ResetEffects() => IsEffectActive = false;
+        public override bool InstancePerEntity => true;
 
-        public override void UpdateLifeRegen(ref int damage) {
+        public override void ResetEffects(NPC npc) => IsEffectActive = false;
+
+        public override void UpdateLifeRegen(NPC npc, ref int damage) {
             if (!IsEffectActive) {
                 return;
             }
 
-            if (NPC.onFire || NPC.onFire2 || NPC.onFire3 || NPC.onFrostBurn || NPC.onFrostBurn2 || NPC.shadowFlame) {
-                if (NPC.lifeRegen > 0)
-                    NPC.lifeRegen = 0;
+            if (npc.onFire || npc.onFire2 || npc.onFire3 || npc.onFrostBurn || npc.onFrostBurn2 || npc.shadowFlame) {
+                if (npc.lifeRegen > 0)
+                    npc.lifeRegen = 0;
 
-                NPC.lifeRegen -= 50;
+                npc.lifeRegen -= 50;
                 if (damage < 10)
                     damage = 10;
             }

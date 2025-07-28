@@ -280,6 +280,14 @@ sealed class CustomLiquidCollision_NPC : GlobalNPC {
         On_NPC.Collision_WaterCollision += On_NPC_Collision_WaterCollision;
         On_NPC.Collision_MoveWhileWet += On_NPC_Collision_MoveWhileWet;
         On_NPC.UpdateNPC_UpdateGravity += On_NPC_UpdateNPC_UpdateGravity;
+        On_NPC.DelBuff += On_NPC_DelBuff;
+    }
+
+    private void On_NPC_DelBuff(On_NPC.orig_DelBuff orig, NPC self, int buffIndex) {
+        if (self.onFire && self.GetGlobalNPC<CustomLiquidCollision_NPC>().tarWet && self.buffType[buffIndex] == 24) {
+            return;
+        }
+        orig(self, buffIndex);
     }
 
     private void On_NPC_UpdateNPC_UpdateGravity(On_NPC.orig_UpdateNPC_UpdateGravity orig, NPC self) {
@@ -512,6 +520,14 @@ sealed class CustomLiquidCollision_Player : ModPlayer {
         On_Player.DryCollision += On_Player_DryCollision;
         On_Dust.NewDust += On_Dust_NewDust;
         On_Player.WaterCollision += On_Player_WaterCollision;
+        On_Player.DelBuff += On_Player_DelBuff;
+    }
+
+    private void On_Player_DelBuff(On_Player.orig_DelBuff orig, Player self, int b) {
+        if ((self.onFire || self.onFire3) && self.GetModPlayer<CustomLiquidCollision_Player>().tarWet && (self.buffType[b] == 24 || self.buffType[b] == 323)) {
+            return;
+        }
+        orig(self, b);
     }
 
     private void On_Player_WaterCollision(On_Player.orig_WaterCollision orig, Player self, bool fallThrough, bool ignorePlats) {
