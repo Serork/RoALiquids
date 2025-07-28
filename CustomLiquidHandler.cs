@@ -100,7 +100,95 @@ sealed class CustomLiquidHandler : IInitializer {
         On_MapHelper.CreateMapTile += On_MapHelper_CreateMapTile;
         On_MapHelper.GetMapTileXnaColor += On_MapHelper_GetMapTileXnaColor;
 
+        //On_Collision.DrownCollision += On_Collision_DrownCollision;
+        On_Player.CheckDrowning += On_Player_CheckDrowning;
+
         MonoModHooks.Add(typeof(MapLegend).GetMethod("FromTile", BindingFlags.Instance | BindingFlags.Public), OnFromTile);
+    }
+
+    private void On_Player_CheckDrowning(On_Player.orig_CheckDrowning orig, Player self) {
+        bool flag2 = self.GetModPlayer<CustomLiquidCollision_Player>().tarWet;
+        if (!flag2) {
+            orig(self);
+            return;
+        }
+
+        bool flag = Collision.DrownCollision(self.position, self.width, self.height, self.gravDir);
+        if (self.armor[0].type == 250 || self.armor[0].type == 4275)
+            flag = true;
+
+        if (self.inventory[self.selectedItem].type == 186 && self.itemAnimation == 0) {
+            try {
+                int num = (int)((self.position.X + (float)(self.width / 2) + (float)(6 * self.direction)) / 16f);
+                int num2 = 0;
+                if (self.gravDir == -1f)
+                    num2 = self.height;
+
+                int num3 = (int)((self.position.Y + (float)num2 - 44f * self.gravDir) / 16f);
+                if (Main.tile[num, num3] != null && Main.tile[num, num3].LiquidAmount < 128) {
+                    if (!Main.tile[num, num3].HasTile || !Main.tileSolid[Main.tile[num, num3].TileType] || Main.tileSolidTop[Main.tile[num, num3].TileType])
+                        flag = false;
+                }
+            }
+            catch {
+            }
+        }
+
+        if (self.gills)
+            flag = Main.getGoodWorld && !flag;
+
+        if (self.shimmering)
+            flag = false;
+
+        if (self.mount.Active && self.mount.Type == 4)
+            flag = false;
+
+        if (Main.myPlayer == self.whoAmI) {
+            if (self.accMerman) {
+                if (flag)
+                    self.merman = true;
+
+                flag = false;
+            }
+
+            if (flag) {
+                self.breathCD++;
+                if (self.breathCD >= self.breathCDMax) {
+                    self.breathCD = 0;
+                    self.breath--;
+                    if (self.breath == 0)
+                        SoundEngine.PlaySound(SoundID.Drown);
+
+                    if (self.breath <= 0) {
+                        self.lifeRegenTime = 0f;
+                        self.breath = 0;
+                        self.statLife -= 2;
+                        if (self.statLife <= 0) {
+                            self.statLife = 0;
+                            self.KillMe(PlayerDeathReason.ByOther(1), 10.0, 0);
+                        }
+                    }
+                }
+            }
+            else {
+                self.breath += 3;
+                if (self.breath > self.breathMax)
+                    self.breath = self.breathMax;
+
+                self.breathCD = 0;
+            }
+        }
+
+        if (!flag2 && flag && Main.rand.Next(20) == 0 && !self.lavaWet && !self.honeyWet) {
+            int num4 = 0;
+            if (self.gravDir == -1f)
+                num4 += self.height - 12;
+
+            if (self.inventory[self.selectedItem].type == 186)
+                Dust.NewDust(new Vector2(self.position.X + (float)(10 * self.direction) + 4f, self.position.Y + (float)num4 - 54f * self.gravDir), self.width - 8, 8, 34, 0f, 0f, 0, default(Color), 1.2f);
+            else
+                Dust.NewDust(new Vector2(self.position.X + (float)(12 * self.direction), self.position.Y + (float)num4 + 4f * self.gravDir), self.width - 8, 8, 34, 0f, 0f, 0, default(Color), 1.2f);
+        }
     }
 
     private void On_WorldGen_WaterCheck(On_WorldGen.orig_WaterCheck orig) {
