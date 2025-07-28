@@ -2654,10 +2654,10 @@ sealed class CustomLiquidHandler : IInitializer {
                     }
 
                     if (ptr2->VisibleType == 5 && ptr2->HasVisibleLiquid && Dust.lavaBubbles < 200) {
-                        if (_random.Next(500) == 0)
+                        if (_random.Next(600) == 0)
                             Dust.NewDust(new Vector2(num25 * 16, num26 * 16), 16, 16, ModContent.DustType<Tar>(), 0f, 0f, 0, Color.White);
 
-                        if (_random.Next(250) == 0) {
+                        if (_random.Next(300) == 0) {
                             int num27 = Dust.NewDust(new Vector2(num25 * 16, num26 * 16), 16, 8, ModContent.DustType<Tar>(), 0f, 0f, 50, Color.White, 1.5f);
                             Main.dust[num27].velocity *= 0.8f;
                             Main.dust[num27].velocity.X *= 2f;
