@@ -3,6 +3,7 @@ using System.Linq;
 
 using Terraria;
 using Terraria.DataStructures;
+using Terraria.Map;
 using Terraria.ModLoader;
 using Terraria.ModLoader.IO;
 
@@ -10,6 +11,20 @@ namespace RoALiquids;
 
 sealed class CustomLiquidIO : ModSystem {
     private static HashSet<Point16> _customLiquidPositions = [];
+
+    public override void Load() {
+        On_WorldMap.Load += On_WorldMap_Load;
+    }
+
+    private void On_WorldMap_Load(On_WorldMap.orig_Load orig, WorldMap self) {
+        orig(self);
+        foreach (Point16 customLiquidPosition in _customLiquidPositions) {
+            int x = customLiquidPosition.X, y = customLiquidPosition.Y;
+            Tile tile = Main.tile[x, y];
+            MapTile tile2 = MapHelper.CreateMapTile(x, y, Main.Map[x, y].Light);
+            Main.Map.SetTile(x, y, ref tile2);
+        }
+    }
 
     public override void SaveWorldData(TagCompound tag) {
         for (int i = 0; i < Main.maxTilesX; i++) {
@@ -29,7 +44,8 @@ sealed class CustomLiquidIO : ModSystem {
         var customLiquidPositions = tag.GetList<Point16>(nameof(CustomLiquidIO));
         _customLiquidPositions = [.. customLiquidPositions];
         foreach (Point16 customLiquidPosition in _customLiquidPositions) {
-            Tile tile = Main.tile[customLiquidPosition.X, customLiquidPosition.Y];
+            int x = customLiquidPosition.X, y = customLiquidPosition.Y;
+            Tile tile = Main.tile[x, y];
             tile.LiquidType = 5;
         }
     }
