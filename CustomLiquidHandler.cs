@@ -239,7 +239,6 @@ sealed class CustomLiquidHandler : IInitializer {
                             Liquid.AddWater(i, num);
                     }
 
-
                     if (tile.LiquidType == 5) {
                         if (tile3.LiquidAmount > 0 && tile3.LiquidType != 5)
                             Liquid.AddWater(i, num);
@@ -2988,6 +2987,7 @@ sealed class CustomLiquidHandler : IInitializer {
 
             num = Main.windSpeedCurrent * 15f;
             num = ((!(num < 0f)) ? (num + 5f) : (num - 5f));
+            num = MathF.Abs(num);
             _frameState2 += num * (float)gameTime.ElapsedGameTime.TotalSeconds;
             if (_frameState2 < 0f)
                 _frameState2 += 16f;
