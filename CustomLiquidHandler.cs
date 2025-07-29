@@ -305,7 +305,34 @@ sealed class CustomLiquidHandler : IInitializer {
     private MapTile On_MapHelper_CreateMapTile(On_MapHelper.orig_CreateMapTile orig, int i, int j, byte Light) {
         Tile tile = Main.tile[i, j];
         if (tile.LiquidAmount > 32 && tile.LiquidType >= 4) {
-            return MapTile.Create((ushort)(tile.LiquidType - 4 + 10000), Light, (byte)0);
+            int num3 = 0;
+            int num2 = Light;
+            if (tile.HasTile) {
+                num3 = 1;
+                bool flag = tile.IsTileInvisible;
+                if (tile.IsTileFullbright && !flag)
+                    num2 = 255;
+
+            }
+            if (num3 == 0) {
+                bool flag2 = tile.IsWallInvisible;
+                if (tile.WallType > 0 && tile.IsWallInvisible && !flag2)
+                    num2 = 255;
+            }
+
+            if (num3 == 0) {
+                if ((double)j < Main.worldSurface) {
+                    if (Main.remixWorld) {
+                        // Patch note: num2, used below.
+                        num2 = 5;
+                    }
+                    else {
+                        int num6 = (byte)(255.0 * ((double)j / Main.worldSurface));
+                        num2 = 255;
+                    }
+                }
+            }
+            return MapTile.Create((ushort)(tile.LiquidType - 4 + 10000), (byte)num2, (byte)0);
         }
         else {
             return orig(i, j, Light);
