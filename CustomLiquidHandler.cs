@@ -592,13 +592,13 @@ sealed class CustomLiquidHandler : IInitializer {
 
                 if (!self._useViscosityFilter) {
                     if (nPC.honeyWet || nPC.lavaWet || handler.permafrostWet || handler.tarWet) {
-                        num *= handler.tarWet ? 0.1f : 0.3f;
+                        num *= 0.3f;
                     }
                 }
 
-                if (handler.tarWet) {
-                    num *= 0.5f;
-                }
+                //if (handler.tarWet) {
+                //    num *= 0.5f;
+                //}
 
                 if (nPC.wet || handler.wet)
                     tileBatch.Draw(TextureAssets.MagicPixel.Value, new Vector4(vector4.X, vector4.Y, (float)nPC.width * 2f, (float)nPC.height * 2f) * 0.25f, null, new VertexColors(new Color(vector5.X * 0.5f + 0.5f, vector5.Y * 0.5f + 0.5f, 0.5f * num)), new Vector2((float)TextureAssets.MagicPixel.Width() / 2f, (float)TextureAssets.MagicPixel.Height() / 2f), SpriteEffects.None, nPC.rotation);
@@ -642,13 +642,13 @@ sealed class CustomLiquidHandler : IInitializer {
                 var handler = Main.player[j].GetModPlayer<CustomLiquidCollision_Player>();
                 if (!self._useViscosityFilter) {
                     if (player.honeyWet || player.lavaWet || handler.permafrostWet || handler.tarWet) {
-                        num3 *= handler.tarWet ? 0.1f : 0.3f;
+                        num3 *= 0.3f;
                     }
                 }
 
-                if (handler.tarWet) {
-                    num3 *= 0.5f;
-                }
+                //if (handler.tarWet) {
+                //    num3 *= 0.5f;
+                //}
 
                 if (player.wet || handler.wet)
                     tileBatch.Draw(TextureAssets.MagicPixel.Value, new Vector4(vector6.X - (float)player.width * 2f * 0.5f, vector6.Y - (float)player.height * 2f * 0.5f, (float)player.width * 2f, (float)player.height * 2f) * 0.25f, new VertexColors(new Color(velocity2.X * 0.5f + 0.5f, velocity2.Y * 0.5f + 0.5f, 0.5f * num3)));
@@ -717,11 +717,11 @@ sealed class CustomLiquidHandler : IInitializer {
                 Vector2 velocity3 = projectile.velocity;
                 velocity3.Normalize();
                 if (!self._useViscosityFilter && (flag2 || flag || flag4 || flag5))
-                    num6 *= flag4 ? 0.1f : 0.3f;
+                    num6 *= 0.3f;
 
-                if (flag4) {
-                    num6 *= 0.5f;
-                }
+                //if (flag4) {
+                //    num6 *= 0.5f;
+                //}
 
                 float num7 = Math.Max(12f, (float)projectile.width * 0.75f);
                 float num8 = Math.Max(12f, (float)projectile.height * 0.75f);
