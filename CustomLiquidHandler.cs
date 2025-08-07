@@ -104,6 +104,59 @@ sealed class CustomLiquidHandler : IInitializer {
         On_Player.CheckDrowning += On_Player_CheckDrowning;
 
         MonoModHooks.Add(typeof(MapLegend).GetMethod("FromTile", BindingFlags.Instance | BindingFlags.Public), OnFromTile);
+
+        On_WorldGen.PlaceLiquid += On_WorldGen_PlaceLiquid;
+    }
+
+    private bool On_WorldGen_PlaceLiquid(On_WorldGen.orig_PlaceLiquid orig, int x, int y, byte liquidType, byte amount) {
+        if (!WorldGen.InWorld(x, y))
+            return false;
+
+        Tile tile = Main.tile[x, y];
+        if (tile == null)
+            return false;
+
+        byte b = (byte)tile.LiquidType;
+        if (tile.HasUnactuatedTile && Main.tileSolid[tile.TileType] && !Main.tileSolidTop[tile.TileType])
+            return false;
+
+        if (tile.LiquidAmount == 0 || liquidType == b) {
+            tile.LiquidType = liquidType;
+            if (amount + tile.LiquidAmount > 255)
+                amount = (byte)(255 - tile.LiquidAmount);
+
+            tile.LiquidAmount += amount;
+            WorldGen.SquareTileFrame(x, y);
+            if (Main.netMode != 0)
+                NetMessage.sendWater(x, y);
+
+            return true;
+        }
+
+        int liquidMergeTileType = 0;
+        bool waterNearby = b == 0;
+        bool lavaNearby = b == 1;
+        bool honeyNearby = b == 2;
+        bool shimmerNearby = b == 3;
+        bool permafrostNearby = b == 4;
+        bool tarNearby = b == 5;
+        int liquidMergeType = 0;
+        GetLiquidMergeTypes(liquidType, out liquidMergeTileType, out liquidMergeType, waterNearby, lavaNearby, honeyNearby, shimmerNearby, tarNearby, out bool shouldExplode);
+        if (liquidMergeTileType != 0) {
+            tile.LiquidAmount = 0;
+            tile.LiquidType = 0;
+            WorldGen.PlaceTile(x, y, liquidMergeTileType, mute: true);
+            WorldGen.SquareTileFrame(x, y);
+
+            if (Main.netMode != 0) {
+                NetMessage.SendTileSquare(-1, x - 1, y - 1, 3);
+                MultiplayerSystem.SendPacket(new PlayLiquidChangeSoundPacket(x, y, (byte)GetLiquidChangeType(liquidType, liquidMergeType)));
+            }
+
+            return true;
+        }
+
+        return false;
     }
 
     private void On_Player_CheckDrowning(On_Player.orig_CheckDrowning orig, Player self) {
@@ -2168,10 +2221,10 @@ sealed class CustomLiquidHandler : IInitializer {
     }
 
     private void On_SceneMetrics_Reset(On_SceneMetrics.orig_Reset orig, SceneMetrics self) {
+        orig(self);
+
         var fieldInfo = typeof(SceneMetrics).GetField("_liquidCounts", BindingFlags.Instance | BindingFlags.NonPublic);
         fieldInfo?.SetValue(self, new int[4 + 2]);
-
-        orig(self);
     }
 
     private struct LiquidCache {
